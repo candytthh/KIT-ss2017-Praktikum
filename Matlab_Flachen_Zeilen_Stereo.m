@@ -2,6 +2,60 @@
 close all;
 clc;
 
+%Flachen:   
+
+Error=cameraParams.ReprojectionErrors;
+for i=1:25
+    E(:,:,i)=Error(:,:,i).^2;
+    N=sum(E(:,:,i));
+    M(i)=sum(N(:));
+end
+
+[N,n]=min(M);   %n position of mini Error
+
+Rl=cameraParams.RotationMatrices;
+Rl=Rl(:,:,n)';
+Tl=cameraParams.TranslationVectors;
+Tl=Tl(n,:)';
+AF=cameraParams.IntrinsicMatrix;
+AF=AF';
+RL=[Rl,Tl;0, 0, 0, 1];
+
+I_f1=imread('calib_area.bmp');% name of choosed area-scan camera picture
+[imagePoints_f1,boardSize1]=detectCheckerboardPoints(I_f1);
+imagepos_f(:,:,1)=imagePoints_f1;
+
+IF1=imagePoints_f1(13,:)';   %Image position 1
+IF2=imagePoints_f1(14,:)';   %Image position 2
+WrF=cameraParams.WorldPoints;
+WrF1=[WrF(13,:)';0];
+WrF2=[WrF(14,:)';0];   %World positon 2
+
+%{
+Rl=[0.0048 -1 0.0087;0.9998 0.0046 -0.0170;0.0169 0.0087 0.9998];   %RotationM
+Tl=[37.2566 -47.3591 497.9225]';    %TranslationV
+AF=[6974.6 0 983.1057;0 6953.4 1001.3;0 0 1];   %IntrinsicMatrix
+RL=[Rl,Tl;0, 0, 0, 1];
+
+
+IF1=[1506 1178]';   %Image position 1
+WrF1=[60 0 0]';    %World positon 1
+IF2=[1227 1179]'; %Image position 2
+WrF2=[41.1 13.8 0]';  %World positon 2
+%}
+
+S1x=itow(AF,Rl,Tl,IF1,WrF1);    %Calculate positon 1
+S1x=S1x(1);
+S1y=itow(AF,Rl,Tl,IF1,WrF1);
+S1y=S1y(2);
+
+S2x=itow(AF,Rl,Tl,IF2,WrF2);    %Calculate positon 2
+S2x=S2x(1);
+S2y=itow(AF,Rl,Tl,IF2,WrF2);
+S2y=S2y(2);
+
+%Zeilen
+
 H = imread('c-z5.png');  %name of line-scan picture
 I=rgb2gray(H);
 plot(I);    %grayscale
@@ -97,61 +151,6 @@ cy  %principle point y
 expectedpos=map3d (A,R,t,worldpos3')';
 rep_error=sum(sqrt(sum((imagepos2-expectedpos).^2,2)))/length(worldpos2)
 
-
-%Flachen:   
-
-Error=cameraParams.ReprojectionErrors;
-for i=1:25
-    E(:,:,i)=Error(:,:,i).^2;
-    N=sum(E(:,:,i));
-    M(i)=sum(N(:));
-end
-
-[N,n]=min(M);   %n position of mini Error
-
-Rl=cameraParams.RotationMatrices;
-Rl=Rl(:,:,n)';
-Tl=cameraParams.TranslationVectors;
-Tl=Tl(n,:)';
-AF=cameraParams.IntrinsicMatrix;
-AF=AF';
-RL=[Rl,Tl;0, 0, 0, 1];
-
-I_f1=imread('calib_area.bmp');% name of choosed area-scan camera picture
-[imagePoints_f1,boardSize1]=detectCheckerboardPoints(I_f1);
-imagepos_f(:,:,1)=imagePoints_f1;
-
-IF1=imagePoints_f1(13,:)';   %Image position 1
-IF2=imagePoints_f1(14,:)';   %Image position 2
-WrF=cameraParams.WorldPoints;
-WrF1=[WrF(13,:)';0];
-WrF2=[WrF(14,:)';0];   %World positon 2
-
-%{
-Rl=[0.0048 -1 0.0087;0.9998 0.0046 -0.0170;0.0169 0.0087 0.9998];   %RotationM
-Tl=[37.2566 -47.3591 497.9225]';    %TranslationV
-AF=[6974.6 0 983.1057;0 6953.4 1001.3;0 0 1];   %IntrinsicMatrix
-RL=[Rl,Tl;0, 0, 0, 1];
-
-
-IF1=[1506 1178]';   %Image position 1
-WrF1=[60 0 0]';    %World positon 1
-IF2=[1227 1179]'; %Image position 2
-WrF2=[41.1 13.8 0]';  %World positon 2
-%}
-
-S1x=itow(AF,Rl,Tl,IF1,WrF1);    %Calculate positon 1
-S1x=S1x(1);
-S1y=itow(AF,Rl,Tl,IF1,WrF1);
-S1y=S1y(2);
-
-S2x=itow(AF,Rl,Tl,IF2,WrF2);    %Calculate positon 2
-S2x=S2x(1);
-S2y=itow(AF,Rl,Tl,IF2,WrF2);
-S2y=S2y(2);
-
-
-%Zeilen
 Rr=R; %RotationM
 Tr=t;   %TranslationV
 AZ=A; %IntrinsicMatrix
