@@ -12,7 +12,7 @@ camera calibration
     
     1.take pitures and input them in Matlab
     2.use toolbox to calibrate pictures and export camera parameters.
-    
+    3.eidt the number of pictures in programm line 8, as comment described
     //the file 'calibrationSession.mat' includes all parameters of area-scan camera we have got after first 'Aufnahme'
    
     
